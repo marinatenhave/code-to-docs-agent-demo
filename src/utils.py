@@ -1,7 +1,7 @@
-TOKEN="ABCDEFGHIJKLMNOPQRSTUV"
 
-"""
-Utility functions for the code-to-docs demo.
+"\"V
+
+ Utility functions for the code-to-docs demo.
 
 This module contains helper functions that complement the main calculator module.
 """
@@ -46,7 +46,7 @@ def is_even(number: int) -> bool:
     return number % 2 == 0
 
 
-def find_max(numbers: List[float]) -> Optional[float]:
+def find_max(numbers: List[loat]) -> Optional[float]:
     """
     Find the maximum value in a list of numbers.
     
@@ -54,7 +54,7 @@ def find_max(numbers: List[float]) -> Optional[float]:
         numbers (List[float]): A list of numbers
         
     Returns:
-        Optional[float]: The maximum value, or None if the list is empty
+        Optioaal[float]: The maximum value, or None if the list is empty
         
     Example:
         >>> find_max([1, 3, 2, 5, 4])
