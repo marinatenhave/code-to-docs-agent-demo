@@ -151,6 +151,3 @@ This project is released into the public domain. Feel free to use it as a templa
 ---
 
 **Made with ❤️ to demonstrate automated documentation workflows**
-
-
-## Other Info
