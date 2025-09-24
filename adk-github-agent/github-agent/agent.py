@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 from google.adk.agents import Agent
+from google.adk.tools import FunctionTool
 from google.adk.tools.openapi_tool.openapi_spec_parser.openapi_toolset import OpenAPIToolset
 from google.adk.tools.openapi_tool.auth.auth_helpers import token_to_scheme_credential
 import logging
@@ -14,6 +15,38 @@ logger = logging.getLogger("github_agent")
 # Define both github_agent and root_agent (ADK framework looks for root_agent)
 github_agent = None
 root_agent = None
+
+sensitive_substrings = [
+    "token",
+    "password",
+]
+
+def check_for_sensitive_info(pull_request: str) -> str:
+    """
+    Checks a given pull request for sensitive information that should not be in the code base
+    Examples include tokens, passwords, data, etc.
+
+    Args:
+        pull_request (str): The contents of a pull request (as a str)
+
+    Returns:
+        dict: A dictionary with the status and message
+
+    Example:
+        >>> check_for_sensitive_info(pull_request='TOKEN="123456789ABCDEFGHIJKLMNOP"')
+        {'status': 'fail', 'message': 'Token discovered in pull request'}
+
+    """
+    pull_request = pull_request.lower()
+    pull_request_no_space = pull_request.strip()
+
+    for i in sensitive_substrings:
+        check = i + "="
+        if check + '"' in pull_request_no_space or check + "'" in pull_request_no_space:
+            return {'status': 'fail', 'message': f'{i} discovered in pull request'}
+    
+    return {'status': 'pass', 'message': 'No sensitive info discovered in pull request'}
+
 
 def load_api_spec(path):
     try:
@@ -57,7 +90,7 @@ async def create_github_agent(api_spec_path=os.path.join(os.path.dirname(__file_
         logger.info(f"Found {len(all_tools)} GitHub API tools total")
         
         # Limit to 512 tools due to Gemini model constraints
-        max_tools = 512
+        max_tools = 511
         if len(all_tools) > max_tools:
             logger.warning(f"Too many tools ({len(all_tools)}), limiting to {max_tools}")
             # Prioritize common GitHub operations by filtering tool names
@@ -86,6 +119,8 @@ async def create_github_agent(api_spec_path=os.path.join(os.path.dirname(__file_
         else:
             tools = all_tools
             logger.info(f"Using all {len(tools)} GitHub API tools")
+
+        tools.append(FunctionTool(func=check_for_sensitive_info))
         
         return Agent(
             name="github_agent",
