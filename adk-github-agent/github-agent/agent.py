@@ -22,6 +22,49 @@ sensitive_substrings = [
     "password",
 ]
 
+web_start = "https://"
+
+valid_github_links = [
+    "www.github.com",
+    "github.com"
+]
+
+def parse_link(link: str) -> dict:
+    """
+    Parses an inputted GitHub link in order to get a GitHub repo name, author, and the pull request number (if specified)
+
+    Args:
+        link (str): The GitHub link to parse
+
+    Returns:
+        dict: A dictionary with the status, author, repo name (if applicable), and pull request number (if applicable)
+
+    Example:
+        >>> parse_links(link="github.com/https://github.com/marinatenhave/code-to-docs-agent-demo/pull/2")
+        {'status': 'pass', 'author': 'marinatenhave', 'repo_name': 'code-to-docs-agent-demo', pull_request: '2'}
+    """
+
+    if link[:len(web_start)] == web_start:
+        link = link[len(web_start):]
+
+    split_link = link.split('/')
+
+    if split_link[0] not in valid_github_links:
+        return {'status': 'fail', 'message': 'Link provided is not a github link'}
+    
+    out = dict()
+    out['status'] = 'pass'
+
+    out['author'] = split_link[1]
+
+    if len(split_link) > 2:
+        out['repo_name'] = split_link[2]
+    
+    if len(split_link) > 4 and split_link[3] == 'pull':
+        out['pull_request'] = split_link[4]
+    
+    return out
+
 def check_for_sensitive_info(pull_request: str) -> str:
     """
     Checks ALL files in a pull request for sensitive information that should not be in the code base.
@@ -197,7 +240,7 @@ async def create_github_agent(api_spec_path=os.path.join(os.path.dirname(__file_
         logger.info(f"Found {len(all_tools)} GitHub API tools total")
         
         # Limit to 512 tools due to Gemini model constraints
-        max_tools = 511
+        max_tools = 510
         if len(all_tools) > max_tools:
             logger.warning(f"Too many tools ({len(all_tools)}), limiting to {max_tools}")
             # Prioritize common GitHub operations by filtering tool names
@@ -228,6 +271,7 @@ async def create_github_agent(api_spec_path=os.path.join(os.path.dirname(__file_
             logger.info(f"Using all {len(tools)} GitHub API tools")
 
         tools.append(FunctionTool(func=check_for_sensitive_info))
+        tools.append(FunctionTool(func=parse_link))
         
         return Agent(
             name="github_agent",
