@@ -289,6 +289,11 @@ async def create_github_agent(api_spec_path=os.path.join(os.path.dirname(__file_
             - Use names and identifiers exactly as specified by the user
             - Add helpful descriptions when allowed by the API
             - Apply sensible defaults for optional parameters when not specified
+
+            For documentation updating:
+            - Read the files from a given git branch or pull request
+            - Compare the changes made to the files to the documentation provided in the README
+            - Update the README to include any missing data from changes in the branch
             
             Always inform the user about the actions you're taking and the results received.
             """,
