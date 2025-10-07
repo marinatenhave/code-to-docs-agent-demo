@@ -1,3 +1,5 @@
+TOKEN="ABCDEFGHIJKLMNOPQRSTUV"
+
 """
 Utility functions for the code-to-docs demo.
 
